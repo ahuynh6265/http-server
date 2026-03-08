@@ -1,7 +1,7 @@
 import socket, threading, json, datetime, os
 
 
-HOST = '127.0.0.1'
+HOST = '0.0.0.0'
 #environment variable for railway
 PORT = int(os.environ.get("PORT", 8080))
 
