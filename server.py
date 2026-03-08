@@ -64,6 +64,20 @@ def handle_connection(client_socket):
       body = json.dumps(users_list)
       status = "HTTP/1.1 200 OK"
       content_type = "application/json"
+    
+    elif path.startswith("/users/") and method == "DELETE":
+      get_id = path.replace("/users/", "")
+      if not get_id.isdecimal():
+        body = "Not a valid ID"
+        status =  "HTTP/1.1 403 FORBIDDEN"
+        content_type = "text/plain"
+      else:
+        user_id = int(get_id)
+        users_list.pop(user_id)
+        body = json.dumps(users_list)
+        status = "HTTP/1.1 200 OK"
+        content_type = "application/json"
+
 
     elif path == "/about":
       body = "About page"
