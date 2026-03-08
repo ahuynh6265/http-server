@@ -19,6 +19,8 @@ json_test = {
   }
 }
 
+users_list = []
+
 
 
 print(f"Server listening on {HOST}:{PORT}")
@@ -52,8 +54,14 @@ def handle_connection(client_socket):
 
     elif path == "/users" and method == "POST": 
       data = json.loads(body_section)
-      body = json.dumps(data)
+      users_list.append(data)
+      body = json.dumps(users_list)
       status = "HTTP/1.1 201 CREATED"
+      content_type = "application/json"
+    
+    elif path == "/users" and method == "GET":
+      body = json.dumps(users_list)
+      status = "HTTP/1.1 200 OK"
       content_type = "application/json"
 
     elif path == "/about":
