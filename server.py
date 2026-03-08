@@ -1,8 +1,9 @@
-import socket, threading, json, datetime 
+import socket, threading, json, datetime, os
 
 
 HOST = '127.0.0.1'
-PORT = 8080 
+#environment variable for railway
+PORT = int(os.environ.get("PORT", 8080))
 
 #create an IPv4 (AF_INET) TCP (SOCK_STREAM) socket for the server
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
@@ -34,16 +35,15 @@ def handle_connection(client_socket):
   print(request)
 
   if request:
-    first_line = request.splitlines()[0]
-    print(f"Request line: {first_line}")
-
-    
-    get_line = first_line.split()
-    method = get_line[0] 
-    path = get_line[1]
-    version = get_line[2]
-    print(f"get line: {get_line}")
-    print(f"method: {method}")
+    try: 
+      first_line = request.splitlines()[0]    
+      get_line = first_line.split()
+      method = get_line[0] 
+      path = get_line[1]
+      version = get_line[2]
+    except(IndexError, ValueError):
+      client_socket.close()
+      return 
 
     path, _, query = path.partition("?")
      
@@ -53,12 +53,18 @@ def handle_connection(client_socket):
       status = "HTTP/1.1 200 OK"
       content_type = "text/plain"
 
-    elif path == "/users" and method == "POST": 
-      data = json.loads(body_section)
-      users_list.append(data)
-      body = json.dumps(users_list)
-      status = "HTTP/1.1 201 CREATED"
-      content_type = "application/json"
+    elif path == "/users" and method == "POST":
+      try: 
+        data = json.loads(body_section)
+      except json.JSONDecodeError:
+        body = "Invalid JSON"
+        status = "HTTP/1.1 400 BAD REQUEST"
+        content_type = "text/plain"
+      else: 
+        users_list.append(data)
+        body = json.dumps(users_list)
+        status = "HTTP/1.1 201 CREATED"
+        content_type = "application/json"
     
     elif path == "/users" and method == "GET":
       body = json.dumps(users_list)
