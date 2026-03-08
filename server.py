@@ -27,6 +27,7 @@ def handle_connection(client_socket):
 
   #read up to 1024 bytes of data from the client and convert from bytes to a string
   request = client_socket.recv(1024).decode()
+  headers_section, _, body_section = request.partition("\r\n\r\n")
   print(request)
 
   if request:
@@ -38,14 +39,22 @@ def handle_connection(client_socket):
     method = get_line[0] 
     path = get_line[1]
     version = get_line[2]
+    print(f"get line: {get_line}")
+    print(f"method: {method}")
 
-  
-    
+    path, _, query = path.partition("?")
+     
     print(path)
     if path == "/": 
       body = "Welcome to my HTTP server"
       status = "HTTP/1.1 200 OK"
       content_type = "text/plain"
+
+    elif path == "/users" and method == "POST": 
+      data = json.loads(body_section)
+      body = json.dumps(data)
+      status = "HTTP/1.1 201 CREATED"
+      content_type = "application/json"
 
     elif path == "/about":
       body = "About page"
@@ -70,7 +79,19 @@ def handle_connection(client_socket):
         body = data 
         status = "HTTP/1.1 200 OK"
         content_type = "text/html"
-        
+    
+    elif path == "/search":
+      results = {}
+      split = query.split("&")
+      for s in split:
+        key, value = s.split("=")
+        results[key] = value
+      if "q" in results:
+        body = json.dumps(results)
+        status = "HTTP/1.1 200 OK"
+        content_type = "text/html"
+
+
     else:
       body = "Not found"
       status = "HTTP/1.1 404 NOT FOUND"
