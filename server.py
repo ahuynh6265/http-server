@@ -1,4 +1,4 @@
-import socket, threading, json
+import socket, threading, json, datetime 
 
 
 HOST = '127.0.0.1'
@@ -6,10 +6,13 @@ PORT = 8080
 
 #create an IPv4 (AF_INET) TCP (SOCK_STREAM) socket for the server
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+#allows for reuse of address immediately 
+server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 #associate the socket with a specific network interface (HOST) and port number (PORT)
 server_socket.bind((HOST, PORT))
 #enable the server to accept connections of up to 5 users
 server_socket.listen(5)
+
 
 json_test = {
   "pet": "Wally",
@@ -20,8 +23,6 @@ json_test = {
 }
 
 users_list = []
-
-
 
 print(f"Server listening on {HOST}:{PORT}")
 
@@ -112,10 +113,20 @@ def handle_connection(client_socket):
     "\r\n"
     + body
     )
+    log = datetime.datetime.now() 
+    status = status.replace("HTTP/1.1 ", "")
+    print(
+      f"Method: {method}\n"
+      f"Path: {path}\n"
+      f"Status: {status}\n"
+      f"Timestamp: {log}\n"
+    )
 
     #send the complete http response to the client and shut down the connection
     client_socket.sendall(response.encode())
     client_socket.close() 
+
+
   
 
 while True:
